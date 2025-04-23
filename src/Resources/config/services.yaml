@@ -1,0 +1,9 @@
+services:
+  Dbp\Relay\VerityConnectorClamavBundle\Service\:
+    resource: '../../Service'
+    autowire: true
+    autoconfigure: true
+
+  Dbp\Relay\VerityConnectorClamavBundle\Service\ClamAvAPI:
+    arguments:
+      $serverUrl: '%env(CLAMAV_URI)%'
