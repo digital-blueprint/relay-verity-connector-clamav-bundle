@@ -44,6 +44,7 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
             // Connect to ClamAV daemon
             $socket = fsockopen($serverUrl, (int)$serverPort, $errNo, $errMsg);
             if (!$socket) {
+                unlink($tempFile);
                 throw new \Exception("Could not connect to ClamAV daemon: $errMsg ($errNo)");
             }
 
