@@ -1,6 +1,6 @@
 {
     "name": "dbp/relay-verity-connector-clamav-bundle",
-    "description": "A template bundle for the Relay API gateway",
+    "description": "A connector bundle for the Relay API gateway",
     "type": "symfony-bundle",
     "license": "AGPL-3.0-or-later",
     "require": {
