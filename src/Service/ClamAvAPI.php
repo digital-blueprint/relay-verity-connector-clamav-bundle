@@ -8,7 +8,6 @@ declare(strict_types=1);
 
 namespace Dbp\Relay\VerityConnectorClamavBundle\Service;
 
-use Appwrite\ClamAV\Network;
 use Dbp\Relay\VerityBundle\Helpers\VerityResult;
 use Dbp\Relay\VerityBundle\Service\VerityProviderInterface;
 use Psr\Log\LoggerAwareInterface;
@@ -21,7 +20,6 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
     use LoggerAwareTrait;
 
     public function __construct(
-        private readonly string $serverUrl,
         private readonly HttpClientInterface $httpClient,
         private readonly ConfigurationService $configurationService)
     {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Dbp\Relay\VerityConnectorClamavBundle\DependencyInjection;
 
 use Dbp\Relay\CoreBundle\Extension\ExtensionTrait;
-use Dbp\Relay\VerityConnectorClamavBundle\Service\ExampleentityService;
+use Dbp\Relay\VerityConnectorClamavBundle\Service\ConfigurationService;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
@@ -22,5 +22,8 @@ class DbpRelayVerityConnectorClamavExtension extends ConfigurableExtension
             new FileLocator(__DIR__.'/../Resources/config')
         );
         $loader->load('services.yaml');
+
+        $definition = $container->getDefinition(ConfigurationService::class);
+        $definition->addMethodCall('setConfig', [$mergedConfig]);
     }
 }
