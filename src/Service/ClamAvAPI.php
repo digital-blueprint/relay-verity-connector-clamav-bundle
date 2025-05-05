@@ -36,22 +36,17 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
         }
 
         try {
-            // TODO:
-            // Create a temporary file
             $tempFile = tempnam(sys_get_temp_dir(), 'clamscan_');
             file_put_contents($tempFile, $fileContent);
 
-            // Connect to ClamAV daemon
             $socket = fsockopen($serverUrl, (int)$serverPort, $errNo, $errMsg);
             if (!$socket) {
                 unlink($tempFile);
                 throw new \Exception("Could not connect to ClamAV daemon: $errMsg ($errNo)");
             }
 
-            // Send the INSTREAM command
             fwrite($socket, "nINSTREAM\n");
 
-            // Read file in chunks and send to ClamAV
             $handle = fopen($tempFile, "rb");
             while (!feof($handle)) {
                 $chunk = fread($handle, 8192);
@@ -61,14 +56,10 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
             }
             fclose($handle);
 
-            // Send zero-length chunk to indicate end of file
             fwrite($socket, pack('N', 0));
 
-            // Get the response
             $response = trim(fgets($socket));
             fclose($socket);
-
-            // Delete the temporary file
             unlink($tempFile);
 
             $statusCode = 200;
@@ -81,7 +72,6 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
         $result = new VerityResult();
         $result->profileNameRequested = 'scanning for viruses';
 
-        // Check if the request was successful
         if ($statusCode !== 200) {
             $result->validity = false;
             $result->message = 'Network Error';
@@ -94,7 +84,6 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
         $result->message = 'accepted';
         $result->profileNameUsed = 'clamAV';
 
-        // Check the ClamAV response
         if (strpos($content, 'OK') === false) {
             $result->validity = false;
             $result->message = 'rejected';
