@@ -39,14 +39,14 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
             $tempFile = tempnam(sys_get_temp_dir(), 'clamscan_');
             file_put_contents($tempFile, $fileContent);
 
-            $socket = fsockopen($serverUrl, (int)$serverPort, $errNo, $errMsg);
+            $socket = fsockopen($serverUrl, (int) $serverPort, $errNo, $errMsg);
             if (!$socket) {
                 throw new \Exception("Could not connect to ClamAV daemon: $errMsg ($errNo)");
             }
 
             fwrite($socket, "nINSTREAM\n");
 
-            $handle = fopen($tempFile, "rb");
+            $handle = fopen($tempFile, 'rb');
             while (!feof($handle)) {
                 $chunk = fread($handle, 8192);
                 $size = pack('N', strlen($chunk));
@@ -68,7 +68,7 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
                 unlink($tempFile);
             }
             $statusCode = 500;
-            $content = 'Internal Server Error: ' . $e->getMessage();
+            $content = 'Internal Server Error: '.$e->getMessage();
         }
 
         $result = new VerityResult();
@@ -85,7 +85,7 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
 
         if (strpos($content, 'OK') === false) {
             $result->message = 'rejected';
-            $result->errors[] = 'Virus detected in ' . str_replace('stream', $fileName, $content);
+            $result->errors[] = 'Virus detected in '.str_replace('stream', $fileName, $content);
         }
 
         $result->validity = true;
