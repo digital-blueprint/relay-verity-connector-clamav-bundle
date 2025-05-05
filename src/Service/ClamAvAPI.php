@@ -41,7 +41,6 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
 
             $socket = fsockopen($serverUrl, (int)$serverPort, $errNo, $errMsg);
             if (!$socket) {
-                unlink($tempFile);
                 throw new \Exception("Could not connect to ClamAV daemon: $errMsg ($errNo)");
             }
 
@@ -65,30 +64,32 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
             $statusCode = 200;
             $content = $response;
         } catch (TransportExceptionInterface $e) {
-                $statusCode = 500;
-                $content = 'Internal Server Error: ' . $e->getMessage();
+            if (file_exists($tempFile)) {
+                unlink($tempFile);
+            }
+            $statusCode = 500;
+            $content = 'Internal Server Error: ' . $e->getMessage();
         }
 
         $result = new VerityResult();
         $result->profileNameRequested = 'scanning for viruses';
+        $result->profileNameUsed = 'clamAV';
+        $result->validity = false;
 
         if ($statusCode !== 200) {
-            $result->validity = false;
             $result->message = 'Network Error';
             $result->errors[] = $statusCode.' '.$content;
 
             return $result;
         }
 
-        $result->validity = true;
-        $result->message = 'accepted';
-        $result->profileNameUsed = 'clamAV';
-
         if (strpos($content, 'OK') === false) {
-            $result->validity = false;
             $result->message = 'rejected';
             $result->errors[] = 'Virus detected in ' . str_replace('stream', $fileName, $content);
         }
+
+        $result->validity = true;
+        $result->message = 'accepted';
 
         return $result;
     }
