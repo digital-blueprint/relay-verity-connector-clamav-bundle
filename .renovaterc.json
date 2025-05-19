@@ -13,6 +13,10 @@
   "constraintsFiltering": "strict",
   "packageRules": [
     {
+      "matchPackagePrefixes": ["symfony/"],
+      "allowedVersions": "<7"
+    },
+    {
       "matchPackageNames": ["api-platform/core"],
       "allowedVersions": "<4"
     }
