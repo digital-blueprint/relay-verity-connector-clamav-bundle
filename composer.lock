@@ -335,16 +335,16 @@
         },
         {
             "name": "dbp/relay-verity-bundle",
-            "version": "v0.1.3",
+            "version": "v0.1.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/digital-blueprint/relay-verity-bundle.git",
-                "reference": "65b43c37310046d6d8d2053b829f7883b5e8643d"
+                "reference": "78756496d864c34e5514d81f8babe2148d072be2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/digital-blueprint/relay-verity-bundle/zipball/65b43c37310046d6d8d2053b829f7883b5e8643d",
-                "reference": "65b43c37310046d6d8d2053b829f7883b5e8643d",
+                "url": "https://api.github.com/repos/digital-blueprint/relay-verity-bundle/zipball/78756496d864c34e5514d81f8babe2148d072be2",
+                "reference": "78756496d864c34e5514d81f8babe2148d072be2",
                 "shasum": ""
             },
             "require": {
@@ -390,9 +390,9 @@
             "description": "A validation bundle for the Relay API gateway",
             "support": {
                 "issues": "https://github.com/digital-blueprint/relay-verity-bundle/issues",
-                "source": "https://github.com/digital-blueprint/relay-verity-bundle/tree/v0.1.3"
+                "source": "https://github.com/digital-blueprint/relay-verity-bundle/tree/v0.1.4"
             },
-            "time": "2025-04-24T09:36:20+00:00"
+            "time": "2025-08-20T07:36:27+00:00"
         },
         {
             "name": "doctrine/collections",
@@ -8785,16 +8785,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "11.5.33",
+            "version": "11.5.34",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "5965e9ff57546cb9137c0ff6aa78cb7442b05cf6"
+                "reference": "3e4c6ef395f7cb61a6206c23e0e04b31724174f2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/5965e9ff57546cb9137c0ff6aa78cb7442b05cf6",
-                "reference": "5965e9ff57546cb9137c0ff6aa78cb7442b05cf6",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/3e4c6ef395f7cb61a6206c23e0e04b31724174f2",
+                "reference": "3e4c6ef395f7cb61a6206c23e0e04b31724174f2",
                 "shasum": ""
             },
             "require": {
@@ -8866,7 +8866,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/11.5.33"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/11.5.34"
             },
             "funding": [
                 {
@@ -8890,7 +8890,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-08-16T05:19:02+00:00"
+            "time": "2025-08-20T14:41:45+00:00"
         },
         {
             "name": "react/cache",
