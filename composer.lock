@@ -341,20 +341,22 @@
         },
         {
             "name": "dbp/relay-verity-bundle",
-            "version": "v0.1.7",
+            "version": "v0.1.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/digital-blueprint/relay-verity-bundle.git",
-                "reference": "748dfa2bb291a506413fed6400511c40735496ca"
+                "reference": "b6dbe3f9646d20ce84424d724e850110faf688d5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/digital-blueprint/relay-verity-bundle/zipball/748dfa2bb291a506413fed6400511c40735496ca",
-                "reference": "748dfa2bb291a506413fed6400511c40735496ca",
+                "url": "https://api.github.com/repos/digital-blueprint/relay-verity-bundle/zipball/b6dbe3f9646d20ce84424d724e850110faf688d5",
+                "reference": "b6dbe3f9646d20ce84424d724e850110faf688d5",
                 "shasum": ""
             },
             "require": {
-                "api-platform/core": "^3.4 || ^4.1",
+                "api-platform/metadata": "^4.1",
+                "api-platform/openapi": "^4.1",
+                "api-platform/symfony": "^4.1",
                 "dbp/relay-core-bundle": "^0.1.210",
                 "ext-curl": "*",
                 "ext-fileinfo": "*",
@@ -378,10 +380,11 @@
                 "phpstan/phpstan": "^1.10.59",
                 "phpstan/phpstan-phpunit": "^1.3.16",
                 "phpstan/phpstan-symfony": "^1.3.7",
-                "phpunit/phpunit": "^10.1",
+                "phpunit/phpunit": "^11.5",
                 "symfony/browser-kit": "^6.4",
                 "symfony/monolog-bundle": "^3.10",
-                "symfony/phpunit-bridge": "^7.0.4"
+                "symfony/phpunit-bridge": "^7.0.4",
+                "symfony/runtime": "^6.4"
             },
             "type": "symfony-bundle",
             "autoload": {
@@ -396,9 +399,9 @@
             "description": "A validation bundle for the Relay API gateway",
             "support": {
                 "issues": "https://github.com/digital-blueprint/relay-verity-bundle/issues",
-                "source": "https://github.com/digital-blueprint/relay-verity-bundle/tree/v0.1.7"
+                "source": "https://github.com/digital-blueprint/relay-verity-bundle/tree/v0.1.8"
             },
-            "time": "2025-09-16T12:34:04+00:00"
+            "time": "2025-11-18T14:28:28+00:00"
         },
         {
             "name": "doctrine/collections",
