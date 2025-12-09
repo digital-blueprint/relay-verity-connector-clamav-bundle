@@ -15,7 +15,7 @@
         "symfony/http-kernel": "^6.4",
         "symfony/http-client": "^6.4",
         "symfony/http-client-contracts": "^3.5",
-        "symfony/monolog-bundle": "^3.10",
+        "symfony/monolog-bundle": "^4.0",
         "psr/log": "^1.1.4 || ^2.0 || ^3.0"
     },
     "require-dev": {
