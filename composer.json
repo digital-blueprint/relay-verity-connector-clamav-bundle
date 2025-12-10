@@ -6,7 +6,6 @@
     "require": {
         "php": ">=8.2",
         "ext-json": "*",
-        "api-platform/core": "^3.4.17 || ^4.1",
         "dbp/relay-core-bundle": "^0.1.209",
         "dbp/relay-verity-bundle": "^0.1.2",
         "symfony/config": "^6.4",
