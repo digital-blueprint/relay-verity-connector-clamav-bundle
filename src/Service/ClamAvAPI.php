@@ -35,6 +35,7 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
             throw new \Exception("File size exceeded maxsize: {$fileSize} > {$maxsize}");
         }
 
+        $tempFile = null;
         try {
             $tempFile = tempnam(sys_get_temp_dir(), 'clamscan_');
             file_put_contents($tempFile, $fileContent);
@@ -64,7 +65,7 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
             $statusCode = 200;
             $content = $response;
         } catch (TransportExceptionInterface $e) {
-            if (file_exists($tempFile)) {
+            if ($tempFile !== null && file_exists($tempFile)) {
                 unlink($tempFile);
             }
             $statusCode = 500;
