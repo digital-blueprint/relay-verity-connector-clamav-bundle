@@ -13,7 +13,7 @@
         "symfony/framework-bundle": "^6.4 || ^7.4",
         "symfony/http-kernel": "^6.4 || ^7.4",
         "symfony/http-client": "^6.4 || ^7.4",
-        "symfony/http-client-contracts": "^3.5",
+        "symfony/http-client-contracts": "^7.0",
         "psr/log": "^1.1.4 || ^2.0 || ^3.0"
     },
     "require-dev": {
