@@ -96,6 +96,7 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
         if (strpos($content, 'OK') === false) {
             $result->message = 'rejected';
             $result->errors[] = 'Virus detected in '.str_replace('stream', $fileName, $content);
+
             return $result;
         }
 
