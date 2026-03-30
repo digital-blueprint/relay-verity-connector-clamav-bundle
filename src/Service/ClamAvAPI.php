@@ -25,11 +25,20 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
     {
     }
 
-    public function validate($fileContent, $fileName, $fileSize, $sha1sum, $config, $mimetype): VerityResult
+    public function validate($file, $fileName, $fileSize, $sha1sum, $config, $mimetype): VerityResult
     {
         $bundleConfig = $this->configurationService->getConfig();
-        [$serverUrl, $serverPort] = explode(':', $bundleConfig['url']);
+        $parts = parse_url($bundleConfig['url']);
         $maxsize = $bundleConfig['maxsize'];
+
+        $serverUrl = $parts['host'];
+        if (array_key_exists('path', $parts)) {
+            $serverUrl = $serverUrl.$parts['path'];
+        }
+        if (array_key_exists('query', $parts)) {
+            $serverUrl = $serverUrl.'?'.$parts['query'];
+        }
+        $serverPort = $parts['port'];
 
         if ($fileSize > $maxsize) {
             throw new \Exception("File size exceeded maxsize: {$fileSize} > {$maxsize}");
@@ -38,14 +47,14 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
         $tempFile = null;
         try {
             $tempFile = tempnam(sys_get_temp_dir(), 'clamscan_');
-            file_put_contents($tempFile, $fileContent);
+            file_put_contents($tempFile, file_get_contents($file->getPathName()));
 
             $socket = fsockopen($serverUrl, (int) $serverPort, $errNo, $errMsg);
             if (!$socket) {
                 throw new \Exception("Could not connect to ClamAV daemon: $errMsg ($errNo)");
             }
 
-            fwrite($socket, "nINSTREAM\n");
+            fwrite($socket, "zINSTREAM\0");
 
             $handle = fopen($tempFile, 'rb');
             while (!feof($handle)) {
@@ -57,8 +66,8 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
             fclose($handle);
 
             fwrite($socket, pack('N', 0));
-
-            $response = trim(fgets($socket));
+            $response = fgets($socket);
+            $response = trim($response);
             fclose($socket);
             unlink($tempFile);
 
@@ -87,6 +96,7 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
         if (strpos($content, 'OK') === false) {
             $result->message = 'rejected';
             $result->errors[] = 'Virus detected in '.str_replace('stream', $fileName, $content);
+            return $result;
         }
 
         $result->validity = true;
