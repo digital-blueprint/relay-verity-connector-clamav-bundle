@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f405b2a7c861a8d2d759b33d3f481696",
+    "content-hash": "e1f524608f460f51a76168e511729982",
     "packages": [
         {
             "name": "api-platform/documentation",
@@ -1097,16 +1097,16 @@
         },
         {
             "name": "dbp/relay-verity-bundle",
-            "version": "v0.1.9",
+            "version": "v0.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/digital-blueprint/relay-verity-bundle.git",
-                "reference": "95f75fc33255705fb5f98c790ea36f4027e4023d"
+                "reference": "5c53b05e2353ad815d7054533a1be6a99be94122"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/digital-blueprint/relay-verity-bundle/zipball/95f75fc33255705fb5f98c790ea36f4027e4023d",
-                "reference": "95f75fc33255705fb5f98c790ea36f4027e4023d",
+                "url": "https://api.github.com/repos/digital-blueprint/relay-verity-bundle/zipball/5c53b05e2353ad815d7054533a1be6a99be94122",
+                "reference": "5c53b05e2353ad815d7054533a1be6a99be94122",
                 "shasum": ""
             },
             "require": {
@@ -1114,7 +1114,6 @@
                 "api-platform/openapi": "^4.1",
                 "api-platform/symfony": "^4.1",
                 "dbp/relay-core-bundle": "^0.1.210",
-                "ext-curl": "*",
                 "ext-fileinfo": "*",
                 "ext-json": "*",
                 "php": ">=8.2",
@@ -1125,11 +1124,10 @@
                 "symfony/event-dispatcher-contracts": "^2.5 || ^3.5",
                 "symfony/expression-language": "^6.4 || ^7.4",
                 "symfony/framework-bundle": "^6.4 || ^7.4",
-                "symfony/http-client": "^6.4 || ^7.4",
-                "symfony/http-client-contracts": "^2.5 || ^3.5",
                 "symfony/http-foundation": "^6.4 || ^7.4",
                 "symfony/http-kernel": "^6.4 || ^7.4",
-                "symfony/serializer": "^6.4 || ^7.4"
+                "symfony/serializer": "^6.4 || ^7.4",
+                "symfony/uid": "^7.4"
             },
             "require-dev": {
                 "friendsofphp/php-cs-fixer": "^3.50",
@@ -1155,9 +1153,9 @@
             "description": "A validation bundle for the Relay API gateway",
             "support": {
                 "issues": "https://github.com/digital-blueprint/relay-verity-bundle/issues",
-                "source": "https://github.com/digital-blueprint/relay-verity-bundle/tree/v0.1.9"
+                "source": "https://github.com/digital-blueprint/relay-verity-bundle/tree/v0.2.0"
             },
-            "time": "2025-12-09T13:33:13+00:00"
+            "time": "2026-06-11T14:18:26+00:00"
         },
         {
             "name": "doctrine/collections",
