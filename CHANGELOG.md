@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.2.4
+
+* fix a missing dependency
+
 ## v0.2.3
 
 * support verity 0.2.x
