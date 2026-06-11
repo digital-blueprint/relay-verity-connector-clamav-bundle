@@ -8,13 +8,14 @@
         "ext-json": "*",
         "dbp/relay-core-bundle": "^0.1.209",
         "dbp/relay-verity-bundle": "^0.2.0",
+        "psr/log": "^1.1.4 || ^2.0 || ^3.0",
         "symfony/config": "^6.4 || ^7.4",
         "symfony/dependency-injection": "^6.4 || ^7.4",
         "symfony/framework-bundle": "^6.4 || ^7.4",
-        "symfony/http-kernel": "^6.4 || ^7.4",
         "symfony/http-client": "^6.4 || ^7.4",
         "symfony/http-client-contracts": "^3.5",
-        "psr/log": "^1.1.4 || ^2.0 || ^3.0"
+        "symfony/http-foundation": "^6.4 || ^7.4",
+        "symfony/http-kernel": "^6.4 || ^7.4"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.50",
