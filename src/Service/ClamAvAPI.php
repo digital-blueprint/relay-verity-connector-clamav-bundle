@@ -37,6 +37,11 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
         $this->client = ClamAvClient::createForHost($host, $port);
     }
 
+    public function setClient(ClamAvClient $client): void
+    {
+        $this->client = $client;
+    }
+
     public function validate(File $file, string $fileName,
         int $fileSize,
         string $fileHash,
