@@ -62,6 +62,53 @@ class ClamAvClient
     }
 
     /**
+     * Send a VERSION command and return the version string.
+     *
+     * Example response: "ClamAV 1.3.1/27150/Wed Jan 10 09:28:00 2024"
+     */
+    public function version(): string
+    {
+        $socket = $this->connect();
+        try {
+            $this->socketWrite($socket, "zVERSION\0");
+            $response = fgets($socket);
+            if ($response === false) {
+                throw new ClamAvClientException('Failed to read response from ClamAV socket');
+            }
+
+            return trim($response, " \t\n\r\0");
+        } finally {
+            fclose($socket);
+        }
+    }
+
+    /**
+     * Send a STATS command and return the full multi-line response.
+     *
+     * The response includes thread pool state, queue info, and memory stats,
+     * terminated by an "END" line.
+     */
+    public function stats(): string
+    {
+        $socket = $this->connect();
+        try {
+            $this->socketWrite($socket, "zSTATS\0");
+            $lines = [];
+            while (($line = fgets($socket)) !== false) {
+                $line = trim($line, "\r\n\0");
+                if ($line === 'END') {
+                    return implode("\n", $lines);
+                }
+                $lines[] = $line;
+            }
+
+            throw new ClamAvClientException('Failed to read response from ClamAV socket');
+        } finally {
+            fclose($socket);
+        }
+    }
+
+    /**
      * Stream data from $dataStream through ClamAV's INSTREAM protocol
      * and return the parsed scan result.
      *
