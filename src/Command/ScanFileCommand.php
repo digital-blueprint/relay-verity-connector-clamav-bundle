@@ -14,10 +14,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
-    name: 'dbp:relay:verity-connector-clamav:check-file',
+    name: 'dbp:relay:verity-connector-clamav:scan-file',
     description: 'Scan a local file for viruses using the ClamAV daemon',
 )]
-class CheckFileCommand extends Command
+class ScanFileCommand extends Command
 {
     public function __construct(private readonly ConfigurationService $configurationService)
     {
