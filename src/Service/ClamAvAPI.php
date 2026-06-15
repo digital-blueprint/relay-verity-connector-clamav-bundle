@@ -18,9 +18,25 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
+    private const SOCKET_OPEN_TIMEOUT_SECONDS = 5;
+    private const SOCKET_TIMEOUT_SECONDS = 60;
+    private const CHUNK_SIZE = 8192;
+
+    private string $serverHost;
+    private int $serverPort;
+    private int $maxsize;
+
     public function __construct(
         private readonly ConfigurationService $configurationService)
     {
+        $bundleConfig = $this->configurationService->getConfig();
+        $parts = parse_url($bundleConfig['url']);
+        if ($parts === false || !isset($parts['host'])) {
+            throw new \InvalidArgumentException('Invalid ClamAV URL in configuration: '.$bundleConfig['url']);
+        }
+        $this->serverHost = $parts['host'];
+        $this->serverPort = isset($parts['port']) ? (int) $parts['port'] : 3310;
+        $this->maxsize = $bundleConfig['maxsize'];
     }
 
     public function validate(File $file, string $fileName,
@@ -29,58 +45,62 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
         string $config,
         string $mimetype): VerityResult
     {
-        $bundleConfig = $this->configurationService->getConfig();
-        $parts = parse_url($bundleConfig['url']);
-        $maxsize = $bundleConfig['maxsize'];
-
-        $serverUrl = $parts['host'];
-        if (array_key_exists('path', $parts)) {
-            $serverUrl = $serverUrl.$parts['path'];
-        }
-        if (array_key_exists('query', $parts)) {
-            $serverUrl = $serverUrl.'?'.$parts['query'];
-        }
-        $serverPort = $parts['port'];
-
-        if ($fileSize > $maxsize) {
-            throw new \Exception("File size exceeded maxsize: {$fileSize} > {$maxsize}");
+        if ($fileSize > $this->maxsize) {
+            throw new \RuntimeException("File size exceeded maxsize: {$fileSize} > {$this->maxsize}");
         }
 
-        $tempFile = null;
+        $handle = null;
+        $socket = null;
         try {
-            $tempFile = tempnam(sys_get_temp_dir(), 'clamscan_');
-            file_put_contents($tempFile, file_get_contents($file->getPathName()));
-
-            $socket = fsockopen($serverUrl, (int) $serverPort, $errNo, $errMsg);
-            if (!$socket) {
-                throw new \Exception("Could not connect to ClamAV daemon: $errMsg ($errNo)");
+            $handle = fopen($file->getPathName(), 'rb');
+            if ($handle === false) {
+                throw new \RuntimeException('Could not open file: '.$file->getPathName());
             }
 
-            fwrite($socket, "zINSTREAM\0");
+            $socket = fsockopen($this->serverHost, $this->serverPort, $errNo, $errMsg, self::SOCKET_OPEN_TIMEOUT_SECONDS);
+            if ($socket === false) {
+                throw new \RuntimeException("Could not connect to ClamAV daemon: $errMsg ($errNo)");
+            }
+            stream_set_timeout($socket, self::SOCKET_TIMEOUT_SECONDS);
 
-            $handle = fopen($tempFile, 'rb');
+            if (fwrite($socket, "zINSTREAM\0") === false) {
+                throw new \RuntimeException('Failed to write to ClamAV socket');
+            }
+
             while (!feof($handle)) {
-                $chunk = fread($handle, 8192);
-                $size = pack('N', strlen($chunk));
-                fwrite($socket, $size);
-                fwrite($socket, $chunk);
+                $chunk = fread($handle, self::CHUNK_SIZE);
+                if ($chunk === false) {
+                    throw new \RuntimeException('Failed to read file: '.$file->getPathName());
+                }
+                if ($chunk === '') {
+                    break;
+                }
+                if (fwrite($socket, pack('N', strlen($chunk)).$chunk) === false) {
+                    throw new \RuntimeException('Failed to write to ClamAV socket');
+                }
             }
-            fclose($handle);
 
-            fwrite($socket, pack('N', 0));
+            if (fwrite($socket, pack('N', 0)) === false) {
+                throw new \RuntimeException('Failed to write to ClamAV socket');
+            }
             $response = fgets($socket);
+            if ($response === false) {
+                throw new \RuntimeException('Failed to read response from ClamAV socket');
+            }
             $response = trim($response);
-            fclose($socket);
-            unlink($tempFile);
 
             $statusCode = 200;
             $content = $response;
         } catch (\Exception $e) {
-            if ($tempFile !== null && file_exists($tempFile)) {
-                unlink($tempFile);
-            }
             $statusCode = 500;
             $content = 'Internal Server Error: '.$e->getMessage();
+        } finally {
+            if ($handle !== null) {
+                fclose($handle);
+            }
+            if ($socket !== null) {
+                fclose($socket);
+            }
         }
 
         $result = new VerityResult();
