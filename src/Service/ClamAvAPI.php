@@ -13,15 +13,12 @@ use Dbp\Relay\VerityBundle\Service\VerityProviderInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\HttpFoundation\File\File;
-use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
     public function __construct(
-        private readonly HttpClientInterface $httpClient,
         private readonly ConfigurationService $configurationService)
     {
     }
@@ -78,7 +75,7 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
 
             $statusCode = 200;
             $content = $response;
-        } catch (TransportExceptionInterface $e) {
+        } catch (\Exception $e) {
             if ($tempFile !== null && file_exists($tempFile)) {
                 unlink($tempFile);
             }
