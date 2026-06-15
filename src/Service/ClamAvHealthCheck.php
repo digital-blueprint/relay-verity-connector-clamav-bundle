@@ -7,7 +7,6 @@ namespace Dbp\Relay\VerityConnectorClamavBundle\Service;
 use Dbp\Relay\CoreBundle\HealthCheck\CheckInterface;
 use Dbp\Relay\CoreBundle\HealthCheck\CheckOptions;
 use Dbp\Relay\CoreBundle\HealthCheck\CheckResult;
-use Dbp\Relay\VerityConnectorClamavBundle\ClamAvClient\ClamAvClient;
 
 class ClamAvHealthCheck implements CheckInterface
 {
@@ -25,12 +24,7 @@ class ClamAvHealthCheck implements CheckInterface
         $result = new CheckResult('Check if ClamAV daemon is reachable');
 
         try {
-            $bundleConfig = $this->configurationService->getConfig();
-            $parts = parse_url($bundleConfig['url']);
-            $host = $parts['host'];
-            $port = (int) $parts['port'];
-
-            $client = ClamAvClient::createForHost($host, $port);
+            $client = $this->configurationService->createClient();
             $client->ping();
 
             $result->set(CheckResult::STATUS_SUCCESS);

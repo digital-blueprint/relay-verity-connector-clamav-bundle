@@ -15,7 +15,7 @@ class ClamAvAPITest extends TestCase
     private function createAPI(ClamAvClient $client, int $maxFileSize = 1000000): ClamAvAPI
     {
         $config = new ConfigurationService();
-        $config->setConfig(['url' => 'localhost:3310', 'max_file_size' => $maxFileSize]);
+        $config->setConfig(['host' => 'localhost', 'port' => 3310, 'max_file_size' => $maxFileSize]);
 
         $api = new ClamAvAPI($config);
         $api->setClient($client);

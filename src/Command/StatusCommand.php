@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Dbp\Relay\VerityConnectorClamavBundle\Command;
 
-use Dbp\Relay\VerityConnectorClamavBundle\ClamAvClient\ClamAvClient;
 use Dbp\Relay\VerityConnectorClamavBundle\Service\ConfigurationService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -28,24 +27,16 @@ class StatusCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         $bundleConfig = $this->configurationService->getConfig();
-        $parts = parse_url($bundleConfig['url']);
-        if ($parts === false || !isset($parts['host'])) {
-            $io->error('Invalid ClamAV URL in configuration: '.$bundleConfig['url']);
-
-            return Command::FAILURE;
-        }
-        $host = $parts['host'];
-        $port = isset($parts['port']) ? (int) $parts['port'] : 3310;
 
         $io->title('ClamAV Status');
 
         $io->definitionList(
-            ['Host' => $host],
-            ['Port' => $port],
+            ['Host' => $bundleConfig['host']],
+            ['Port' => $bundleConfig['port']],
         );
 
         try {
-            $client = ClamAvClient::createForHost($host, $port);
+            $client = $this->configurationService->createClient();
 
             $client->ping();
             $io->success('Daemon is reachable (PING OK)');

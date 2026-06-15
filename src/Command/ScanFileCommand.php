@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Dbp\Relay\VerityConnectorClamavBundle\Command;
 
-use Dbp\Relay\VerityConnectorClamavBundle\ClamAvClient\ClamAvClient;
 use Dbp\Relay\VerityConnectorClamavBundle\Service\ConfigurationService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -58,15 +57,7 @@ class ScanFileCommand extends Command
 
         $handle = null;
         try {
-            $bundleConfig = $this->configurationService->getConfig();
-            $parts = parse_url($bundleConfig['url']);
-            if ($parts === false || !isset($parts['host'])) {
-                throw new \InvalidArgumentException('Invalid ClamAV URL in configuration: '.$bundleConfig['url']);
-            }
-            $host = $parts['host'];
-            $port = isset($parts['port']) ? (int) $parts['port'] : 3310;
-
-            $client = ClamAvClient::createForHost($host, $port);
+            $client = $this->configurationService->createClient();
 
             $handle = fopen($filePath, 'rb');
             if ($handle === false) {

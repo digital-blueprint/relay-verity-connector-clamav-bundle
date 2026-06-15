@@ -20,7 +20,7 @@ content:
 
 ```yaml
 dbp_relay_verity_connector_clamav:
-  url: '%env(CLAMAV_URI)%'
+  host: '%env(CLAMAV_HOST)%'
   max_file_size: 32M
 ```
 

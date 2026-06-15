@@ -26,15 +26,8 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
     public function __construct(
         private readonly ConfigurationService $configurationService)
     {
-        $bundleConfig = $this->configurationService->getConfig();
-        $parts = parse_url($bundleConfig['url']);
-        if ($parts === false || !isset($parts['host'])) {
-            throw new \InvalidArgumentException('Invalid ClamAV URL in configuration: '.$bundleConfig['url']);
-        }
-        $host = $parts['host'];
-        $port = isset($parts['port']) ? (int) $parts['port'] : 3310;
-        $this->maxFileSize = $bundleConfig['max_file_size'];
-        $this->client = ClamAvClient::createForHost($host, $port);
+        $this->maxFileSize = $this->configurationService->getConfig()['max_file_size'];
+        $this->client = $this->configurationService->createClient();
     }
 
     public function setClient(ClamAvClient $client): void
