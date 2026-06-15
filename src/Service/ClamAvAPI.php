@@ -21,7 +21,7 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
     use LoggerAwareTrait;
 
     private ClamAvClient $client;
-    private int $maxsize;
+    private int $maxFileSize;
 
     public function __construct(
         private readonly ConfigurationService $configurationService)
@@ -33,7 +33,7 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
         }
         $host = $parts['host'];
         $port = isset($parts['port']) ? (int) $parts['port'] : 3310;
-        $this->maxsize = $bundleConfig['maxsize'];
+        $this->maxFileSize = $bundleConfig['max_file_size'];
         $this->client = ClamAvClient::createForHost($host, $port);
     }
 
@@ -48,8 +48,8 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
         string $config,
         string $mimetype): VerityResult
     {
-        if ($fileSize > $this->maxsize) {
-            throw new \RuntimeException("File size exceeded maxsize: {$fileSize} > {$this->maxsize}");
+        if ($fileSize > $this->maxFileSize) {
+            throw new \RuntimeException("File size exceeded max_file_size: {$fileSize} > {$this->maxFileSize}");
         }
 
         $result = new VerityResult();

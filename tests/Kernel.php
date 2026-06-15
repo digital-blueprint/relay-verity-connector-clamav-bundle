@@ -50,7 +50,7 @@ class Kernel extends BaseKernel
 
         $container->extension('dbp_relay_verity_connector_clamav', [
             'url' => 'localhost:3310',
-            'maxsize' => '1000000',
+            'max_file_size' => '1M',
         ]);
     }
 }

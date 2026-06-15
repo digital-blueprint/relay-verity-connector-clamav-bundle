@@ -12,10 +12,10 @@ use Symfony\Component\HttpFoundation\File\File;
 
 class ClamAvAPITest extends TestCase
 {
-    private function createAPI(ClamAvClient $client, int $maxsize = 1000000): ClamAvAPI
+    private function createAPI(ClamAvClient $client, int $maxFileSize = 1000000): ClamAvAPI
     {
         $config = new ConfigurationService();
-        $config->setConfig(['url' => 'localhost:3310', 'maxsize' => $maxsize]);
+        $config->setConfig(['url' => 'localhost:3310', 'max_file_size' => $maxFileSize]);
 
         $api = new ClamAvAPI($config);
         $api->setClient($client);
@@ -85,15 +85,15 @@ class ClamAvAPITest extends TestCase
         $this->assertStringContainsString('Win.Test', $result->errors[0]);
     }
 
-    public function testValidateMaxsizeExceeded(): void
+    public function testValidateMaxFileSizeExceeded(): void
     {
         [$client, $server] = $this->createMockClient("stream: OK\n");
-        $api = $this->createAPI($client, maxsize: 2);
+        $api = $this->createAPI($client, maxFileSize: 2);
 
         $path = $this->createTempFile('too large');
         try {
             $this->expectException(\RuntimeException::class);
-            $this->expectExceptionMessage('maxsize');
+            $this->expectExceptionMessage('max_file_size');
             $api->validate(new File($path), 'big.bin', filesize($path), '', '', '');
         } finally {
             fclose($server);

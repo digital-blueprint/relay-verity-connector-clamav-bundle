@@ -20,10 +20,16 @@ class Configuration implements ConfigurationInterface
                     ->cannotBeEmpty()
                     ->example('localhost:3310')
                 ->end()
-                ->scalarNode('maxsize')
-                    ->isRequired()
-                    ->cannotBeEmpty()
-                    ->example('10485760')
+                ->integerNode('max_file_size')
+                    ->defaultValue(30 * 1024 * 1024)
+                    ->min(1)
+                    ->example('10M')
+                    ->beforeNormalization()
+                        ->ifString()
+                        ->then(function (string $value): int {
+                            return ini_parse_quantity($value);
+                        })
+                    ->end()
                 ->end()
             ->end();
 
