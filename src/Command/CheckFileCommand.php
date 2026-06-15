@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Dbp\Relay\VerityConnectorClamavBundle\Command;
 
-use Dbp\Relay\VerityConnectorClamavBundle\Service\ClamAvAPI;
+use Dbp\Relay\VerityConnectorClamavBundle\ClamAvClient\ClamAvClient;
+use Dbp\Relay\VerityConnectorClamavBundle\Service\ConfigurationService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\HttpFoundation\File\File;
 
 #[AsCommand(
     name: 'dbp:relay:verity-connector-clamav:check-file',
@@ -19,7 +19,7 @@ use Symfony\Component\HttpFoundation\File\File;
 )]
 class CheckFileCommand extends Command
 {
-    public function __construct(private readonly ClamAvAPI $clamAvAPI)
+    public function __construct(private readonly ConfigurationService $configurationService)
     {
         parent::__construct();
     }
@@ -46,9 +46,7 @@ class CheckFileCommand extends Command
             return Command::FAILURE;
         }
 
-        $file = new File($filePath);
-        $fileSize = $file->getSize();
-        $fileName = $file->getFilename();
+        $fileSize = filesize($filePath);
         $fileHash = hash_file('sha256', $filePath);
 
         $io->title('ClamAV File Scan');
@@ -58,24 +56,47 @@ class CheckFileCommand extends Command
             ['SHA-256' => $fileHash],
         );
 
+        $handle = null;
         try {
-            $result = $this->clamAvAPI->validate($file, $fileName, $fileSize, $fileHash, '', $file->getMimeType() ?? '');
+            $bundleConfig = $this->configurationService->getConfig();
+            $parts = parse_url($bundleConfig['url']);
+            if ($parts === false || !isset($parts['host'])) {
+                throw new \InvalidArgumentException('Invalid ClamAV URL in configuration: '.$bundleConfig['url']);
+            }
+            $host = $parts['host'];
+            $port = isset($parts['port']) ? (int) $parts['port'] : 3310;
+
+            $client = ClamAvClient::createForHost($host, $port);
+
+            $handle = fopen($filePath, 'rb');
+            if ($handle === false) {
+                throw new \RuntimeException('Could not open file: '.$filePath);
+            }
+
+            $result = $client->scanStream($handle);
         } catch (\Exception $e) {
             $io->error('Scan failed: '.$e->getMessage());
 
             return Command::FAILURE;
+        } finally {
+            if ($handle !== null) {
+                fclose($handle);
+            }
         }
 
-        if ($result->validity) {
-            $io->success('File is clean — no threats detected.');
+        if ($result->isClean()) {
+            $io->success('File is clean.');
 
             return Command::SUCCESS;
         }
 
-        $io->error('Threat detected: '.$result->message);
-        foreach ($result->errors as $error) {
-            $io->writeln("  $error");
+        if ($result->isVirusFound()) {
+            $io->error("Threat detected: $result->virusName");
+
+            return Command::FAILURE;
         }
+
+        $io->error("Scan error: $result->errorMessage");
 
         return Command::FAILURE;
     }

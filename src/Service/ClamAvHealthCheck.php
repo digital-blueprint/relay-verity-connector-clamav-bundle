@@ -7,6 +7,7 @@ namespace Dbp\Relay\VerityConnectorClamavBundle\Service;
 use Dbp\Relay\CoreBundle\HealthCheck\CheckInterface;
 use Dbp\Relay\CoreBundle\HealthCheck\CheckOptions;
 use Dbp\Relay\CoreBundle\HealthCheck\CheckResult;
+use Dbp\Relay\VerityConnectorClamavBundle\ClamAvClient\ClamAvClient;
 
 class ClamAvHealthCheck implements CheckInterface
 {
@@ -29,23 +30,8 @@ class ClamAvHealthCheck implements CheckInterface
             $host = $parts['host'];
             $port = (int) $parts['port'];
 
-            $socket = fsockopen($host, $port, $errNo, $errMsg, 5);
-            if ($socket === false) {
-                $result->set(CheckResult::STATUS_FAILURE, "Could not connect to ClamAV daemon: $errMsg ($errNo)");
-
-                return $result;
-            }
-
-            fwrite($socket, "zPING\0");
-            $response = fgets($socket);
-            fclose($socket);
-
-            $response = trim($response, " \t\n\r\0");
-            if ($response !== 'PONG') {
-                $result->set(CheckResult::STATUS_FAILURE, "Unexpected response from ClamAV daemon: $response");
-
-                return $result;
-            }
+            $client = ClamAvClient::createForHost($host, $port);
+            $client->ping();
 
             $result->set(CheckResult::STATUS_SUCCESS);
         } catch (\Throwable $e) {
