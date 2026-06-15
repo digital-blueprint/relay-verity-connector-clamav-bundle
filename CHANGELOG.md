@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.4.0
+
+* Replace "url" option with "host"/"port"/"socket" to avoid confusion since we
+  are not using HTTP to communicate with the clamav daemon.
+* Add support for communication with the clamav daemon over a Unix socket.
+
 ## v0.3.0
 
 * Less memory usage
