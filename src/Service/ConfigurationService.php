@@ -22,6 +22,10 @@ class ConfigurationService
 
     public function createClient(): ClamAvClient
     {
+        if ($this->config['socket'] !== null) {
+            return ClamAvClient::createForSocket($this->config['socket']);
+        }
+
         return ClamAvClient::createForHost($this->config['host'], $this->config['port']);
     }
 }

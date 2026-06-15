@@ -134,6 +134,63 @@ class ClamAvClientTest extends TestCase
         $this->assertSame('INSTREAM size limit exceeded.', $result->errorMessage);
     }
 
+    /**
+     * Test a full ping roundtrip over a Unix domain socket.
+     *
+     * We create a temporary Unix socket server, connect via fsockopen
+     * (the same way createForSocket does internally), accept the connection
+     * on the server side, and write the PONG response before calling ping().
+     */
+    public function testUnixSocket(): void
+    {
+        if (PHP_OS_FAMILY === 'Windows') {
+            $this->markTestSkipped('Unix sockets are not supported on Windows');
+        }
+
+        $socketPath = sys_get_temp_dir().'/clamav_test_'.getmypid().'.sock';
+        @unlink($socketPath);
+
+        $server = stream_socket_server('unix://'.$socketPath, $errNo, $errMsg);
+        $this->assertNotFalse($server, "Failed to create Unix socket: $errMsg ($errNo)");
+
+        try {
+            // Connect to the Unix socket (same as createForSocket does internally)
+            $clientSocket = fsockopen('unix://'.$socketPath, -1, $errNo, $errMsg, 5);
+            $this->assertNotFalse($clientSocket, "fsockopen failed: $errMsg ($errNo)");
+
+            // Accept and pre-write the response before ping() tries to read
+            $conn = stream_socket_accept($server, 5);
+            $this->assertNotFalse($conn);
+            fwrite($conn, "PONG\n");
+            fflush($conn);
+
+            $client = new ClamAvClient(function () use ($clientSocket) {
+                return $clientSocket;
+            });
+            $client->ping();
+
+            $sent = fread($conn, 1024);
+            $this->assertSame("zPING\0", $sent);
+
+            fclose($conn);
+        } finally {
+            fclose($server);
+            @unlink($socketPath);
+        }
+    }
+
+    public function testCreateForSocketConnectionFailure(): void
+    {
+        if (PHP_OS_FAMILY === 'Windows') {
+            $this->markTestSkipped('Unix sockets are not supported on Windows');
+        }
+
+        $client = ClamAvClient::createForSocket('/tmp/nonexistent_clamav_test.sock');
+
+        $this->expectException(ClamAvClientException::class);
+        $client->ping();
+    }
+
     public function testConnectionFailure(): void
     {
         $client = new ClamAvClient(function () {

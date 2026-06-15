@@ -30,10 +30,16 @@ class StatusCommand extends Command
 
         $io->title('ClamAV Status');
 
-        $io->definitionList(
-            ['Host' => $bundleConfig['host']],
-            ['Port' => $bundleConfig['port']],
-        );
+        if ($bundleConfig['socket'] !== null) {
+            $io->definitionList(
+                ['Socket' => $bundleConfig['socket']],
+            );
+        } else {
+            $io->definitionList(
+                ['Host' => $bundleConfig['host']],
+                ['Port' => $bundleConfig['port']],
+            );
+        }
 
         try {
             $client = $this->configurationService->createClient();

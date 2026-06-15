@@ -30,9 +30,24 @@ class ClamAvClient
     public static function createForHost(string $host, int $port, int $connectTimeoutSeconds = 5): self
     {
         return new self(function () use ($host, $port, $connectTimeoutSeconds) {
-            $socket = fsockopen($host, $port, $errNo, $errMsg, $connectTimeoutSeconds);
+            $socket = @fsockopen($host, $port, $errNo, $errMsg, $connectTimeoutSeconds);
             if ($socket === false) {
                 throw new ClamAvClientException("Could not connect to ClamAV daemon: $errMsg ($errNo)");
+            }
+
+            return $socket;
+        });
+    }
+
+    /**
+     * Create a client that connects to a ClamAV daemon via a Unix domain socket.
+     */
+    public static function createForSocket(string $path, int $connectTimeoutSeconds = 5): self
+    {
+        return new self(function () use ($path, $connectTimeoutSeconds) {
+            $socket = @fsockopen('unix://'.$path, -1, $errNo, $errMsg, $connectTimeoutSeconds);
+            if ($socket === false) {
+                throw new ClamAvClientException("Could not connect to ClamAV daemon at $path: $errMsg ($errNo)");
             }
 
             return $socket;

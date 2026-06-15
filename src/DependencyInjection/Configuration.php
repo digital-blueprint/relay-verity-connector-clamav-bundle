@@ -14,16 +14,28 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder('dbp_relay_verity_connector_clamav');
 
         $treeBuilder->getRootNode()
+            ->validate()
+                ->ifTrue(function (array $v): bool {
+                    $hasHost = isset($v['host']);
+                    $hasSocket = isset($v['socket']);
+
+                    return $hasHost === $hasSocket;
+                })
+                ->thenInvalid('Either "host" or "socket" must be set, but not both.')
+            ->end()
             ->children()
                 ->scalarNode('host')
-                    ->isRequired()
-                    ->cannotBeEmpty()
+                    ->defaultNull()
                     ->example('localhost')
                 ->end()
                 ->integerNode('port')
                     ->defaultValue(3310)
                     ->min(1)
                     ->max(65535)
+                ->end()
+                ->scalarNode('socket')
+                    ->defaultNull()
+                    ->example('/var/run/clamav/clamd.ctl')
                 ->end()
                 ->integerNode('max_file_size')
                     ->defaultValue(30 * 1024 * 1024)
