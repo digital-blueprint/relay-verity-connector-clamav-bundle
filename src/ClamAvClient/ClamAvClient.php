@@ -178,8 +178,16 @@ class ClamAvClient
      */
     private function socketWrite($socket, string $data): void
     {
-        if (@fwrite($socket, $data) === false) {
-            throw new ClamAvClientException('Failed to write to ClamAV socket');
+        $offset = 0;
+        $length = strlen($data);
+
+        while ($offset < $length) {
+            $written = @fwrite($socket, substr($data, $offset));
+            if ($written === false || $written === 0) {
+                throw new ClamAvClientException('Failed to write to ClamAV socket');
+            }
+
+            $offset += $written;
         }
     }
 }
