@@ -189,6 +189,11 @@ class ClamAvClient
         while ($offset < $length) {
             $written = @fwrite($socket, substr($data, $offset));
             if ($written === false || $written === 0) {
+                $metadata = stream_get_meta_data($socket);
+                if ($metadata['timed_out']) {
+                    throw new ClamAvClientException('Timed out writing to ClamAV socket');
+                }
+
                 throw new ClamAvClientException('Failed to write to ClamAV socket');
             }
 
