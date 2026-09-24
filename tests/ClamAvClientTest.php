@@ -48,7 +48,7 @@ class ClamAvClientTest extends TestCase
     {
         [$client, $server] = $this->createMockClient();
 
-        fwrite($server, "PONG\n");
+        fwrite($server, "PONG\0");
         fflush($server);
 
         $client->ping();
@@ -63,13 +63,29 @@ class ClamAvClientTest extends TestCase
     {
         [$client, $server] = $this->createMockClient();
 
-        fwrite($server, "UNKNOWN\n");
+        fwrite($server, "UNKNOWN\0");
         fflush($server);
 
         $this->expectException(ClamAvClientException::class);
         $this->expectExceptionMessage('Unexpected response from ClamAV daemon: UNKNOWN');
 
         $client->ping();
+    }
+
+    public function testStats(): void
+    {
+        [$client, $server] = $this->createMockClient();
+
+        fwrite($server, "POOLS: 1\nSTATE: VALID PRIMARY\nEND\0");
+        fflush($server);
+
+        $stats = $client->stats();
+
+        $sent = fread($server, 1024);
+        fclose($server);
+
+        $this->assertSame("POOLS: 1\nSTATE: VALID PRIMARY", $stats);
+        $this->assertSame("zSTATS\0", $sent);
     }
 
     public function testScanStreamClean(): void
@@ -79,7 +95,7 @@ class ClamAvClientTest extends TestCase
         $data = 'test file content';
         $dataStream = $this->createDataStream($data);
 
-        fwrite($server, "stream: OK\n");
+        fwrite($server, "stream: OK\0");
         fflush($server);
 
         $result = $client->scanStream($dataStream);
@@ -104,7 +120,7 @@ class ClamAvClientTest extends TestCase
 
         $dataStream = $this->createDataStream();
 
-        fwrite($server, "stream: Win.Test.EICAR_HDB-1 FOUND\n");
+        fwrite($server, "stream: Win.Test.EICAR_HDB-1 FOUND\0");
         fflush($server);
 
         $result = $client->scanStream($dataStream);
@@ -122,7 +138,7 @@ class ClamAvClientTest extends TestCase
 
         $dataStream = $this->createDataStream();
 
-        fwrite($server, "INSTREAM size limit exceeded. ERROR\n");
+        fwrite($server, "INSTREAM size limit exceeded. ERROR\0");
         fflush($server);
 
         $result = $client->scanStream($dataStream);
@@ -161,7 +177,7 @@ class ClamAvClientTest extends TestCase
             // Accept and pre-write the response before ping() tries to read
             $conn = stream_socket_accept($server, 5);
             $this->assertNotFalse($conn);
-            fwrite($conn, "PONG\n");
+            fwrite($conn, "PONG\0");
             fflush($conn);
 
             $client = new ClamAvClient(function () use ($clientSocket) {

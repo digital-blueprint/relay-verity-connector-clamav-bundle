@@ -51,7 +51,7 @@ class ClamAvAPITest extends TestCase
 
     public function testValidateClean(): void
     {
-        [$client, $server] = $this->createMockClient("stream: OK\n");
+        [$client, $server] = $this->createMockClient("stream: OK\0");
         $api = $this->createAPI($client);
 
         $path = $this->createTempFile();
@@ -68,7 +68,7 @@ class ClamAvAPITest extends TestCase
 
     public function testValidateVirusFound(): void
     {
-        [$client, $server] = $this->createMockClient("stream: Win.Test FOUND\n");
+        [$client, $server] = $this->createMockClient("stream: Win.Test FOUND\0");
         $api = $this->createAPI($client);
 
         $path = $this->createTempFile();
@@ -87,7 +87,7 @@ class ClamAvAPITest extends TestCase
 
     public function testValidateMaxFileSizeExceeded(): void
     {
-        [$client, $server] = $this->createMockClient("stream: OK\n");
+        [$client, $server] = $this->createMockClient("stream: OK\0");
         $api = $this->createAPI($client, maxFileSize: 2);
 
         $path = $this->createTempFile('too large');

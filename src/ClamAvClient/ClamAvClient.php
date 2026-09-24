@@ -16,6 +16,7 @@ class ClamAvClient
 {
     private const SOCKET_TIMEOUT_SECONDS = 60;
     private const CHUNK_SIZE = 8192;
+    private const MAX_RESPONSE_LENGTH = 65536;
 
     /**
      * @param callable(): resource $socketFactory Returns a connected stream resource
@@ -62,12 +63,7 @@ class ClamAvClient
         $socket = $this->connect();
         try {
             $this->socketWrite($socket, "zPING\0");
-            $response = @fgets($socket);
-            if ($response === false) {
-                throw new ClamAvClientException('Failed to read response from ClamAV socket');
-            }
-
-            $response = trim($response, " \t\n\r\0");
+            $response = $this->readRecord($socket);
             if ($response !== 'PONG') {
                 throw new ClamAvClientException("Unexpected response from ClamAV daemon: $response");
             }
@@ -86,12 +82,8 @@ class ClamAvClient
         $socket = $this->connect();
         try {
             $this->socketWrite($socket, "zVERSION\0");
-            $response = @fgets($socket);
-            if ($response === false) {
-                throw new ClamAvClientException('Failed to read response from ClamAV socket');
-            }
 
-            return trim($response, " \t\n\r\0");
+            return $this->readRecord($socket);
         } finally {
             fclose($socket);
         }
@@ -108,16 +100,12 @@ class ClamAvClient
         $socket = $this->connect();
         try {
             $this->socketWrite($socket, "zSTATS\0");
-            $lines = [];
-            while (($line = @fgets($socket)) !== false) {
-                $line = trim($line, "\r\n\0");
-                if ($line === 'END') {
-                    return implode("\n", $lines);
-                }
-                $lines[] = $line;
+            $lines = explode("\n", $this->readRecord($socket));
+            if (array_pop($lines) !== 'END') {
+                throw new ClamAvClientException('Unexpected STATS response from ClamAV daemon');
             }
 
-            throw new ClamAvClientException('Failed to read response from ClamAV socket');
+            return implode("\n", $lines);
         } finally {
             fclose($socket);
         }
@@ -149,12 +137,7 @@ class ClamAvClient
             // Signal end-of-stream.
             $this->socketWrite($socket, pack('N', 0));
 
-            $response = @fgets($socket);
-            if ($response === false) {
-                throw new ClamAvClientException('Failed to read response from ClamAV socket');
-            }
-
-            return ClamAvScanResult::fromResponse(trim($response));
+            return ClamAvScanResult::fromResponse($this->readRecord($socket));
         } finally {
             fclose($socket);
         }
@@ -188,6 +171,42 @@ class ClamAvClient
             }
 
             $offset += $written;
+        }
+    }
+
+    /**
+     * @param resource $socket
+     */
+    private function readRecord($socket): string
+    {
+        $record = '';
+
+        while (true) {
+            $byte = @fread($socket, 1);
+            if ($byte === false || $byte === '') {
+                $metadata = stream_get_meta_data($socket);
+                if ($metadata['timed_out']) {
+                    throw new ClamAvClientException('Timed out reading response from ClamAV socket');
+                }
+                if ($metadata['eof']) {
+                    throw new ClamAvClientException('ClamAV socket closed before the response was complete');
+                }
+
+                throw new ClamAvClientException('Failed to read response from ClamAV socket');
+            }
+
+            if ($byte === "\0") {
+                if ($record === '') {
+                    throw new ClamAvClientException('Received an empty response from ClamAV daemon');
+                }
+
+                return $record;
+            }
+
+            $record .= $byte;
+            if (strlen($record) > self::MAX_RESPONSE_LENGTH) {
+                throw new ClamAvClientException('Response from ClamAV daemon exceeded the maximum length');
+            }
         }
     }
 }
