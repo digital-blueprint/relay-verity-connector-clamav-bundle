@@ -68,7 +68,7 @@ class ClamAvClient
                 throw new ClamAvClientException("Unexpected response from ClamAV daemon: $response");
             }
         } finally {
-            fclose($socket);
+            @fclose($socket);
         }
     }
 
@@ -85,7 +85,7 @@ class ClamAvClient
 
             return $this->readRecord($socket);
         } finally {
-            fclose($socket);
+            @fclose($socket);
         }
     }
 
@@ -107,7 +107,7 @@ class ClamAvClient
 
             return implode("\n", $lines);
         } finally {
-            fclose($socket);
+            @fclose($socket);
         }
     }
 
@@ -143,7 +143,7 @@ class ClamAvClient
 
             return ClamAvScanResult::fromResponse($this->readRecord($socket));
         } finally {
-            fclose($socket);
+            @fclose($socket);
         }
     }
 
@@ -154,6 +154,8 @@ class ClamAvClient
     {
         $socket = ($this->socketFactory)();
         if (!@stream_set_timeout($socket, self::SOCKET_TIMEOUT_SECONDS)) {
+            @fclose($socket);
+
             throw new ClamAvClientException('Failed to configure ClamAV socket');
         }
 
