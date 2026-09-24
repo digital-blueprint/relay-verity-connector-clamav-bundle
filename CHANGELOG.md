@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.4.1
+
+* Improved error handling when communicating with the clamav daemon.
+
 ## v0.4.0
 
 * Replace "url" option with "host"/"port"/"socket" to avoid confusion since we
