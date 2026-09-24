@@ -123,13 +123,17 @@ class ClamAvClient
         try {
             $this->writeRecord($socket, 'INSTREAM');
 
-            while (!feof($dataStream)) {
+            while (true) {
                 $chunk = @fread($dataStream, self::CHUNK_SIZE);
                 if ($chunk === false) {
                     throw new ClamAvClientException('Failed to read from data stream');
                 }
                 if ($chunk === '') {
-                    break;
+                    if (@feof($dataStream)) {
+                        break;
+                    }
+
+                    throw new ClamAvClientException('Failed to read from data stream');
                 }
                 $this->writeChunk($socket, $chunk);
             }
