@@ -52,7 +52,7 @@ class ClamAvAPI implements VerityProviderInterface, LoggerAwareInterface
 
         $handle = null;
         try {
-            $handle = fopen($file->getPathName(), 'rb');
+            $handle = @fopen($file->getPathName(), 'rb');
             if ($handle === false) {
                 throw new \RuntimeException('Could not open file: '.$file->getPathName());
             }

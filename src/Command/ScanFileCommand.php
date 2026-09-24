@@ -59,7 +59,7 @@ class ScanFileCommand extends Command
         try {
             $client = $this->configurationService->createClient();
 
-            $handle = fopen($filePath, 'rb');
+            $handle = @fopen($filePath, 'rb');
             if ($handle === false) {
                 throw new \RuntimeException('Could not open file: '.$filePath);
             }

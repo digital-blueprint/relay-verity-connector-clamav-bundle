@@ -62,7 +62,7 @@ class ClamAvClient
         $socket = $this->connect();
         try {
             $this->socketWrite($socket, "zPING\0");
-            $response = fgets($socket);
+            $response = @fgets($socket);
             if ($response === false) {
                 throw new ClamAvClientException('Failed to read response from ClamAV socket');
             }
@@ -86,7 +86,7 @@ class ClamAvClient
         $socket = $this->connect();
         try {
             $this->socketWrite($socket, "zVERSION\0");
-            $response = fgets($socket);
+            $response = @fgets($socket);
             if ($response === false) {
                 throw new ClamAvClientException('Failed to read response from ClamAV socket');
             }
@@ -109,7 +109,7 @@ class ClamAvClient
         try {
             $this->socketWrite($socket, "zSTATS\0");
             $lines = [];
-            while (($line = fgets($socket)) !== false) {
+            while (($line = @fgets($socket)) !== false) {
                 $line = trim($line, "\r\n\0");
                 if ($line === 'END') {
                     return implode("\n", $lines);
@@ -136,7 +136,7 @@ class ClamAvClient
             $this->socketWrite($socket, "zINSTREAM\0");
 
             while (!feof($dataStream)) {
-                $chunk = fread($dataStream, self::CHUNK_SIZE);
+                $chunk = @fread($dataStream, self::CHUNK_SIZE);
                 if ($chunk === false) {
                     throw new ClamAvClientException('Failed to read from data stream');
                 }
@@ -149,7 +149,7 @@ class ClamAvClient
             // Signal end-of-stream.
             $this->socketWrite($socket, pack('N', 0));
 
-            $response = fgets($socket);
+            $response = @fgets($socket);
             if ($response === false) {
                 throw new ClamAvClientException('Failed to read response from ClamAV socket');
             }
@@ -166,7 +166,9 @@ class ClamAvClient
     private function connect()
     {
         $socket = ($this->socketFactory)();
-        stream_set_timeout($socket, self::SOCKET_TIMEOUT_SECONDS);
+        if (!@stream_set_timeout($socket, self::SOCKET_TIMEOUT_SECONDS)) {
+            throw new ClamAvClientException('Failed to configure ClamAV socket');
+        }
 
         return $socket;
     }
@@ -176,7 +178,7 @@ class ClamAvClient
      */
     private function socketWrite($socket, string $data): void
     {
-        if (fwrite($socket, $data) === false) {
+        if (@fwrite($socket, $data) === false) {
             throw new ClamAvClientException('Failed to write to ClamAV socket');
         }
     }
