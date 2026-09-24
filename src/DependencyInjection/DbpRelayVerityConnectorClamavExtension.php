@@ -15,6 +15,7 @@ class DbpRelayVerityConnectorClamavExtension extends ConfigurableExtension
 {
     use ExtensionTrait;
 
+    /** @param array<mixed> $mergedConfig */
     public function loadInternal(array $mergedConfig, ContainerBuilder $container): void
     {
         $loader = new YamlFileLoader(

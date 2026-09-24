@@ -8,13 +8,16 @@ use Dbp\Relay\VerityConnectorClamavBundle\ClamAvClient\ClamAvClient;
 
 class ConfigurationService
 {
+    /** @var array<mixed> */
     private array $config = [];
 
+    /** @param array<mixed> $config */
     public function setConfig(array $config): void
     {
         $this->config = $config;
     }
 
+    /** @return array<mixed> */
     public function getConfig(): array
     {
         return $this->config;
