@@ -83,7 +83,12 @@ class ClamAvClient
         try {
             $this->writeRecord($socket, 'VERSION');
 
-            return $this->readRecord($socket);
+            $response = $this->readRecord($socket);
+            if ($response === '') {
+                throw new ClamAvClientException('Received an empty response from ClamAV daemon');
+            }
+
+            return $response;
         } finally {
             @fclose($socket);
         }
@@ -223,10 +228,6 @@ class ClamAvClient
             }
 
             if ($byte === "\0") {
-                if ($record === '') {
-                    throw new ClamAvClientException('Received an empty response from ClamAV daemon');
-                }
-
                 return $record;
             }
 

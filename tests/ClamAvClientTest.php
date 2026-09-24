@@ -72,6 +72,23 @@ class ClamAvClientTest extends TestCase
         $client->ping();
     }
 
+    public function testVersionRejectsEmptyResponse(): void
+    {
+        [$client, $server] = $this->createMockClient();
+
+        fwrite($server, "\0");
+        fflush($server);
+
+        $this->expectException(ClamAvClientException::class);
+        $this->expectExceptionMessage('Received an empty response from ClamAV daemon');
+
+        try {
+            $client->version();
+        } finally {
+            fclose($server);
+        }
+    }
+
     public function testStats(): void
     {
         [$client, $server] = $this->createMockClient();
