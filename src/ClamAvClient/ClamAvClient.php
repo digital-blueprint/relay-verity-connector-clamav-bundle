@@ -62,7 +62,7 @@ class ClamAvClient
     {
         $socket = $this->connect();
         try {
-            $this->socketWrite($socket, "zPING\0");
+            $this->writeRecord($socket, 'PING');
             $response = $this->readRecord($socket);
             if ($response !== 'PONG') {
                 throw new ClamAvClientException("Unexpected response from ClamAV daemon: $response");
@@ -81,7 +81,7 @@ class ClamAvClient
     {
         $socket = $this->connect();
         try {
-            $this->socketWrite($socket, "zVERSION\0");
+            $this->writeRecord($socket, 'VERSION');
 
             return $this->readRecord($socket);
         } finally {
@@ -99,7 +99,7 @@ class ClamAvClient
     {
         $socket = $this->connect();
         try {
-            $this->socketWrite($socket, "zSTATS\0");
+            $this->writeRecord($socket, 'STATS');
             $lines = explode("\n", $this->readRecord($socket));
             if (array_pop($lines) !== 'END') {
                 throw new ClamAvClientException('Unexpected STATS response from ClamAV daemon');
@@ -121,7 +121,7 @@ class ClamAvClient
     {
         $socket = $this->connect();
         try {
-            $this->socketWrite($socket, "zINSTREAM\0");
+            $this->writeRecord($socket, 'INSTREAM');
 
             while (!feof($dataStream)) {
                 $chunk = @fread($dataStream, self::CHUNK_SIZE);
@@ -131,11 +131,11 @@ class ClamAvClient
                 if ($chunk === '') {
                     break;
                 }
-                $this->socketWrite($socket, pack('N', strlen($chunk)).$chunk);
+                $this->writeChunk($socket, $chunk);
             }
 
             // Signal end-of-stream.
-            $this->socketWrite($socket, pack('N', 0));
+            $this->writeChunk($socket, '');
 
             return ClamAvScanResult::fromResponse($this->readRecord($socket));
         } finally {
@@ -159,7 +159,23 @@ class ClamAvClient
     /**
      * @param resource $socket
      */
-    private function socketWrite($socket, string $data): void
+    private function writeRecord($socket, string $command): void
+    {
+        $this->writeAll($socket, 'z'.$command."\0");
+    }
+
+    /**
+     * @param resource $socket
+     */
+    private function writeChunk($socket, string $data): void
+    {
+        $this->writeAll($socket, pack('N', strlen($data)).$data);
+    }
+
+    /**
+     * @param resource $socket
+     */
+    private function writeAll($socket, string $data): void
     {
         $offset = 0;
         $length = strlen($data);
